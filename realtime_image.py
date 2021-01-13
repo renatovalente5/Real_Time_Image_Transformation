@@ -10,7 +10,6 @@ video = cv2.VideoCapture(0)
 shot_idx = 0
 brilho = 1
 contraste = 0
-gray_bool = False
 detect_face_bool = False
 face_blur = 0
 face_blur = 0
@@ -144,9 +143,9 @@ while(True):
     gray = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
     brilho = cv2.getTrackbarPos('Luminosidade','brightness')
     contraste = cv2.getTrackbarPos('Contraste','brightness')
+    detection_face = cv2.getTrackbarPos('Detecting Face', 'brightness')
     out_blur = cv2.getTrackbarPos('Background Blur','brightness')
     face_blur = cv2.getTrackbarPos('Face Blur','brightness')
-    auto_correction = cv2.getTrackbarPos('Auto-Correction','brightness')
     cinzento = cv2.getTrackbarPos('Cores <-> Cinzento','brightness')
     if old_face_blur != face_blur:                              #Altera entre o Blur do background e da cara
         out_blur = 0
@@ -154,9 +153,9 @@ while(True):
     if old_out_blur != out_blur:
         face_blur = 0
         cv2.setTrackbarPos('Face Blur','brightness', 0)
-
     old_face_blur = face_blur
     old_out_blur = out_blur
+    auto_correction = cv2.getTrackbarPos('Auto-Correction','brightness')
 
     #Correção Automatica dos Histogramas com o equalizeHist
     img_yuv = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV)
@@ -171,12 +170,12 @@ while(True):
             minSize=(30, 30),
         )
     
-    if detect_face_bool == True or cv2.getTrackbarPos('Detecting Face','brightness') == 1:
+    if detection_face == 1:
         for (x, y, w, h) in faces:      # Draw a rectangle around the faces
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
     
-    if gray_bool == True or cinzento == 1:  #If TRUE show video in Cinzento
+    if cinzento == 1:  #If TRUE show video in Cinzento
         if auto_correction == 1:
             grayimg = cv2.cvtColor(img_output, cv2.COLOR_BGR2GRAY)
             clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))  #Coreeção CLAHE (Contrast Limited Adaptive Histogram Equalization) 
@@ -251,23 +250,6 @@ while(True):
         break
 
 
-### Key Press Actions
-# Colors
-    if ch == ord('g'):  #Image to GRAY
-        gray_bool = True
-
-    if ch == ord('c'):  ##Image with COLORS
-        gray_bool = False
-
-# Detect
-    if ch == ord('d'):  ##Image with square face
-        detect_face_bool = True
-
-    if ch == ord('f'):  ##Image without square face
-        detect_face_bool = False
-
-
-
 # Print and save image
     if ch == ord('p'):
         fn = './prints/shot_%03d.bmp' % (shot_idx)
@@ -280,15 +262,15 @@ while(True):
 
 
 # Definition of window size
-    if ch == ord('2'):
+    if ch == ord('1'):
         video.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
  
-    if ch == ord('3'):
+    if ch == ord('2'):
         video.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         video.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
  
-    if ch == ord('4'):
+    if ch == ord('3'):
         video.set(cv2.CAP_PROP_FRAME_WIDTH, 160)
         video.set(cv2.CAP_PROP_FRAME_HEIGHT, 120)
 
