@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 from PIL import Image
 import pytesseract
-from matplotlib import pyplot as plt
 
 faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 video = cv2.VideoCapture(0)
@@ -19,7 +18,7 @@ old_out_blur = 0
 auto_correction = 0
 cinzento = 0
 
-def adjust_brightness(frame2, brightness_factor=0, contrast_factor=0):
+def adjust_brightness(frame2, brightness_factor=0, contrast_factor=0): #Ajust Bright and Contrast.
     brightness_factor /= 100
     contrast_factor -= 127
 
@@ -45,21 +44,19 @@ def adjust_brightness(frame2, brightness_factor=0, contrast_factor=0):
     
     table = cv2.convertScaleAbs(buf, alpha=brightness_factor, beta=contrast_factor)
     brightness = cv2.hconcat([frame, table])
-    cv2.imshow('brightness', brightness)
+    cv2.imshow('brightness', brightness)    #Criation of main Display
 
     
-def blur_img(img, factor = 20):
-   kW = int(img.shape[1] / factor)
-   kH = int(img.shape[0] / factor)
-    
-   #ensure the shape of the kernel is odd
-   if kW % 2 == 0: kW = kW - 1
-   if kH % 2 == 0: kH = kH - 1
-    
-   blurred_img = cv2.GaussianBlur(img, (kW, kH), 0)
+def blur_img(img, factor = 20):     #backGround Blur
+   W = int(img.shape[1] / factor)
+   H = int(img.shape[0] / factor)
+   if W % 2 == 0: W = W - 1
+   if H % 2 == 0: H = H - 1
+
+   blurred_img = cv2.GaussianBlur(img, (W, H), 0)
    return blurred_img
 
-def extract_indexes(length, step_size):
+def extract_indexes(length, step_size): #To the Face
    begin=0
    end=0
    indexes = []
@@ -69,7 +66,6 @@ def extract_indexes(length, step_size):
    for i in range(cycles):
        begin = i * step_size
        end = i * step_size+step_size
-       #print(i, ". [",begin,", ",end,")")
     
        index = []
        index.append(begin)
@@ -80,7 +76,6 @@ def extract_indexes(length, step_size):
        if end > length: end = length
     
    if end < length:
-       #print(i+1,". [", end,", ",length,")")
        index = []
        index.append(end)
        index.append(length)
@@ -89,48 +84,27 @@ def extract_indexes(length, step_size):
    return indexes
 
 
-def salt_pepper(grayy, prob):
-      # Extract image dimensions
-      row, col, c = grayy.shape
-
-      # Declare salt & pepper noise ratio
-      s_vs_p = 0.5
-      output = np.copy(grayy)
-
-      # Apply salt noise on each pixel individually
-      num_salt = np.ceil(prob * grayy.size * s_vs_p)
-      coords = [np.random.randint(0, i - 1, int(num_salt))
-            for i in grayy.shape]
-      output[coords] = 1
-
-      # Apply pepper noise on each pixel individually
-      num_pepper = np.ceil(prob * grayy.size * (1. - s_vs_p))
-      coords = [np.random.randint(0, i - 1, int(num_pepper))
-            for i in grayy.shape]
-      output[coords] = 0
-      cv2.imshow('output', output)
-
-      return output
-
-def limpaImg(img1, novaImg):
+def limparImg(img1, novaImg): #to Clear the img with Black and White
     img = Image.open(img1)
-    img = img.point(lambda x: 0 if x<100 else 255)
-    img.save(novaImg)    
-    return img
+    gray = img.convert('L')
+    gray = gray.point(lambda x: 0 if x<100 else 255)
+    gray.save(novaImg)    
+    return gray
 
 
 def nothing(x):
     pass
 
 cv2.namedWindow('brightness')
-cv2.createTrackbar('Luminosidade','brightness',100,200,nothing)  #o Brilho varia entre 0 e 1
-cv2.createTrackbar('Contraste','brightness',127,252,nothing)     #o contraste varia enter -127 e + 127
+cv2.createTrackbar('Brightness','brightness',100,200,nothing)  #o Brilho varia entre 0 e 1
+cv2.createTrackbar('Contrast','brightness',127,254,nothing)     #o contraste varia enter -127 e + 127
+cv2.createTrackbar('Auto-Correction','brightness',0,1,nothing)
+cv2.createTrackbar('Colors <-> Gray','brightness',0,1,nothing)
+cv2.createTrackbar('Global Blur','brightness',0,20,nothing)
 cv2.createTrackbar('Detecting Face', 'brightness',0,1,nothing)
 cv2.createTrackbar('Background Blur', 'brightness',0,1,nothing)
 cv2.createTrackbar('Face Blur','brightness',0,40,nothing)
-cv2.createTrackbar('Global Blur','brightness',0,20,nothing)
-cv2.createTrackbar('Cores <-> Cinzento','brightness',0,1,nothing)
-cv2.createTrackbar('Auto-Correction','brightness',0,1,nothing)
+
 
 
 while(True):
@@ -141,12 +115,12 @@ while(True):
         global_blur = 1
     frame2 = cv2.blur(frame, (global_blur, global_blur))
     gray = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
-    brilho = cv2.getTrackbarPos('Luminosidade','brightness')
-    contraste = cv2.getTrackbarPos('Contraste','brightness')
+    brilho = cv2.getTrackbarPos('Brightness','brightness')
+    contraste = cv2.getTrackbarPos('Contrast','brightness')
     detection_face = cv2.getTrackbarPos('Detecting Face', 'brightness')
     out_blur = cv2.getTrackbarPos('Background Blur','brightness')
     face_blur = cv2.getTrackbarPos('Face Blur','brightness')
-    cinzento = cv2.getTrackbarPos('Cores <-> Cinzento','brightness')
+    cinzento = cv2.getTrackbarPos('Colors <-> Gray','brightness')
     if old_face_blur != face_blur:                              #Altera entre o Blur do background e da cara
         out_blur = 0
         cv2.setTrackbarPos('Background Blur','brightness', 0)
@@ -257,7 +231,7 @@ while(True):
         print(fn, 'saved')
         shot_idx += 1
 
-        image = limpaImg('./prints/shot_%03d.bmp' % (shot_idx-1), './prints/shot_%03dFilter.png' % (shot_idx-1))
+        image = limparImg('./prints/shot_%03d.bmp' % (shot_idx-1), './prints/shot_%03dFilter.png' % (shot_idx-1))
         print(pytesseract.image_to_string(image))
 
 
