@@ -14,4 +14,4 @@ sudo add-apt-repository ppa: alex-p / tesseract-ocr-devel
 sudo apt update
 ```
 
-The *facecascade API* is used for the detection of faces by the camera, a *Tesserac library* for recognizing the text of the contrasted image we have produced and a *PIL library* for reading .bmp images from the Print folder.
+The ***facecascade API*** is used for the detection of faces by the camera, a ***Tesserac library*** for recognizing the text of the contrasted image we have produced and a ***PIL library*** for reading .bmp images from the Print folder.
