@@ -1,4 +1,3 @@
-import numpy as np
 import cv2
 from PIL import Image
 import pytesseract
@@ -10,8 +9,6 @@ shot_idx = 0
 brilho = 1
 contraste = 0
 detect_face_bool = False
-face_blur = 0
-face_blur = 0
 alpha_slider_max = 100
 old_face_blur = 0
 old_out_blur = 0
@@ -157,8 +154,7 @@ while(True):
             grayy = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB)
         else:
             grayy = cv2.cvtColor(gray,cv2.COLOR_GRAY2RGB)
-        # sp_05 = salt_pepper(grayy, 0.5)
-        # cv2.imshow('show', contraharmonic_mean(grayy, sp_05, (3,3), 0.5))
+
         if out_blur == 1:
             blurred_img = blur_img(grayy, factor = 10)
             for x, y, w, h in faces:
@@ -189,6 +185,7 @@ while(True):
     else:
         if auto_correction == 1:
             frame2 = img_output
+
         if out_blur == 1:
             blurred_img = blur_img(frame2, factor = 10)
             for x, y, w, h in faces:
@@ -197,7 +194,6 @@ while(True):
             adjust_brightness(blurred_img, brilho, contraste)
         else:
             if face_blur > 0:
-
                 for x, y, w, h in faces:
                     detected_face = frame2[int(y):int(y+h), int(x):int(x+w)]
                     pixelated_face = detected_face.copy()
